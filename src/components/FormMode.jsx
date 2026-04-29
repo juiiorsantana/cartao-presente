@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { ROSE, ROSE_DARK, CREAM, BLUSH, CHARCOAL, GOLD, PETALS } from '../constants'
 import { supabase } from '../lib/supabase'
 
@@ -376,7 +376,10 @@ function Step3({ data, onBack }) {
   const [saveErr, setSaveErr] = useState(false)
 
   // salva o lead assim que o Step3 monta e gera o link limpo com o ID
+  const savedRef = useRef(false)
   useEffect(() => {
+    if (savedRef.current) return
+    savedRef.current = true
     async function saveLeadAndBuildLink() {
       setSaving(true)
       const base = window.location.origin + window.location.pathname
@@ -395,7 +398,6 @@ function Step3({ data, onBack }) {
         setSaveErr(true)
       } else {
         const finalLink = `${base}?id=${row.id}`
-        // atualiza o campo link com a URL final
         supabase.from('leads').update({ link: finalLink }).eq('id', row.id).then(() => {})
         setLink(finalLink)
       }

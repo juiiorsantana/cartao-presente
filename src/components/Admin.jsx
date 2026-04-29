@@ -3,20 +3,23 @@ import { supabase } from '../lib/supabase'
 
 const ADMIN_PASSWORD = 'valeria2025'
 
-/* ── paleta light ── */
 const C = {
   bg:       '#F7F5F3',
   surface:  '#FFFFFF',
   border:   '#E8E2DC',
   rose:     '#C4887A',
   roseDark: '#9E6055',
+  roseBg:   '#FFF0EE',
   gold:     '#C9A96E',
+  goldBg:   '#FEF6E8',
   text:     '#2A2320',
   muted:    '#8A7672',
   green:    '#2D9E6A',
   greenBg:  '#EDFAF4',
   amber:    '#B07830',
   amberBg:  '#FEF6E8',
+  blue:     '#3B82F6',
+  blueBg:   '#EFF6FF',
   sidebar:  '#2A2320',
 }
 
@@ -24,12 +27,10 @@ function fmt(iso) {
   if (!iso) return '—'
   return new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })
 }
-
 function fmtDate(iso) {
   if (!iso) return '—'
   return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
 }
-
 function waLink(raw) {
   if (!raw) return null
   return `https://wa.me/55${raw.replace(/\D/g, '')}`
@@ -55,31 +56,15 @@ function LoginScreen({ onLogin }) {
           <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, color: C.text, marginBottom: 4 }}>Área Administrativa</h1>
           <p style={{ fontSize: 13, color: C.muted }}>Dra. Valeria Cabral</p>
         </div>
-
         <form onSubmit={handle}>
-          <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 6 }}>
-            Senha
-          </label>
+          <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 6 }}>Senha</label>
           <input
-            type="password"
-            value={pw}
-            onChange={e => setPw(e.target.value)}
-            placeholder="••••••••"
-            autoFocus
-            style={{
-              width: '100%', background: C.surface, color: C.text,
-              padding: '12px 14px', borderRadius: 10, fontSize: 15,
-              border: `1.5px solid ${err ? '#f87171' : C.border}`,
-              fontFamily: "'Lato', sans-serif", outline: 'none', marginBottom: 8,
-              boxSizing: 'border-box',
-            }}
+            type="password" value={pw} onChange={e => setPw(e.target.value)}
+            placeholder="••••••••" autoFocus
+            style={{ width: '100%', background: C.surface, color: C.text, padding: '12px 14px', borderRadius: 10, fontSize: 15, border: `1.5px solid ${err ? '#f87171' : C.border}`, fontFamily: "'Lato', sans-serif", outline: 'none', marginBottom: 8, boxSizing: 'border-box' }}
           />
           {err && <p style={{ color: '#ef4444', fontSize: 12, marginBottom: 8 }}>Senha incorreta</p>}
-          <button type="submit" style={{
-            width: '100%', background: C.rose, color: '#fff', border: 'none',
-            borderRadius: 10, padding: '13px', fontSize: 14, fontWeight: 700,
-            cursor: 'pointer', fontFamily: "'Lato', sans-serif", marginTop: 4,
-          }}>
+          <button type="submit" style={{ width: '100%', background: C.rose, color: '#fff', border: 'none', borderRadius: 10, padding: '13px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: "'Lato', sans-serif", marginTop: 4 }}>
             Entrar
           </button>
         </form>
@@ -89,38 +74,58 @@ function LoginScreen({ onLogin }) {
 }
 
 /* ── Stat card ── */
-function StatCard({ label, value, icon, accent }) {
+function StatCard({ label, value, sub, icon, accent, bg }) {
   return (
-    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: '18px 20px', flex: 1, minWidth: 120 }}>
+    <div style={{ background: bg || C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: '18px 20px', flex: 1, minWidth: 120 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-        <p style={{ fontSize: 12, color: C.muted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</p>
+        <p style={{ fontSize: 11, color: C.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</p>
         <span style={{ fontSize: 16 }}>{icon}</span>
       </div>
-      <p style={{ fontSize: 30, fontWeight: 700, color: accent || C.text, lineHeight: 1 }}>{value}</p>
+      <p style={{ fontSize: 28, fontWeight: 700, color: accent || C.text, lineHeight: 1 }}>{value}</p>
+      {sub && <p style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>{sub}</p>}
     </div>
   )
 }
 
-/* ── Badge ── */
+/* ── Badge status ── */
 function Badge({ viewed }) {
   return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 4,
-      fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20,
-      background: viewed ? C.greenBg : C.amberBg,
-      color: viewed ? C.green : C.amber,
-    }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: viewed ? C.greenBg : C.amberBg, color: viewed ? C.green : C.amber }}>
       <span style={{ width: 5, height: 5, borderRadius: '50%', background: viewed ? C.green : C.amber, display: 'inline-block' }} />
       {viewed ? 'Abriu' : 'Aguardando'}
     </span>
   )
 }
 
-/* ── Linha da tabela ── */
+/* ── Botão WhatsApp ── */
+function WAButton({ phone, label }) {
+  const link = waLink(phone)
+  if (!link) return <span style={{ color: C.muted, fontSize: 12 }}>—</span>
+  return (
+    <a
+      href={link} target="_blank" rel="noreferrer"
+      onClick={e => e.stopPropagation()}
+      title={`Abrir WhatsApp: ${phone}`}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 5,
+        background: '#25D366', color: '#fff',
+        padding: '4px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700,
+        textDecoration: 'none', whiteSpace: 'nowrap',
+      }}
+    >
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="white">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+      </svg>
+      {label || phone}
+    </a>
+  )
+}
+
+/* ── Linha da tabela de leads ── */
 function LeadRow({ lead, onCopyLink, onDelete, isLast }) {
-  const [expanded, setExpanded]   = useState(false)
-  const [confirm, setConfirm]     = useState(false)
-  const [deleting, setDeleting]   = useState(false)
+  const [expanded, setExpanded] = useState(false)
+  const [confirm, setConfirm]   = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const viewed = !!lead.visualizado_at
 
   async function handleDelete(e) {
@@ -139,51 +144,39 @@ function LeadRow({ lead, onCopyLink, onDelete, isLast }) {
 
   return (
     <>
-      <tr
-        onClick={() => setExpanded(e => !e)}
-        style={{ cursor: 'pointer', background: expanded ? '#FBF9F8' : C.surface, transition: 'background 0.15s' }}
-      >
-        <td style={{ padding: '14px 16px', borderBottom: isLast && !expanded ? 'none' : `1px solid ${C.border}` }}>
-          <p style={{ fontWeight: 600, color: C.text, fontSize: 14 }}>{lead.mae}</p>
-          {lead.de && <p style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>De: {lead.de}</p>}
+      <tr onClick={() => setExpanded(e => !e)} style={{ cursor: 'pointer', background: expanded ? '#FBF9F8' : C.surface, transition: 'background 0.15s' }}>
+        {/* Mamãe */}
+        <td style={{ padding: '12px 16px', borderBottom: isLast && !expanded ? 'none' : `1px solid ${C.border}` }}>
+          <p style={{ fontWeight: 600, color: C.text, fontSize: 13 }}>{lead.mae}</p>
+          {lead.de && <p style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>De: {lead.de}</p>}
         </td>
-        <td style={{ padding: '14px 16px', borderBottom: isLast && !expanded ? 'none' : `1px solid ${C.border}` }}>
-          {lead.wa_mae
-            ? <a href={waLink(lead.wa_mae)} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ color: C.rose, fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
-                {lead.wa_mae}
-              </a>
-            : <span style={{ color: C.muted, fontSize: 13 }}>—</span>}
+        {/* WhatsApp mamãe */}
+        <td style={{ padding: '12px 16px', borderBottom: isLast && !expanded ? 'none' : `1px solid ${C.border}` }}>
+          <WAButton phone={lead.wa_mae} label={lead.wa_mae} />
         </td>
-        <td style={{ padding: '14px 16px', borderBottom: isLast && !expanded ? 'none' : `1px solid ${C.border}` }}>
+        {/* Status */}
+        <td style={{ padding: '12px 16px', borderBottom: isLast && !expanded ? 'none' : `1px solid ${C.border}` }}>
           <Badge viewed={viewed} />
         </td>
-        <td style={{ padding: '14px 16px', borderBottom: isLast && !expanded ? 'none' : `1px solid ${C.border}`, fontSize: 12, color: C.muted }}>
+        {/* Enviado */}
+        <td style={{ padding: '12px 16px', borderBottom: isLast && !expanded ? 'none' : `1px solid ${C.border}`, fontSize: 12, color: C.muted }}>
           {fmtDate(lead.enviado_at)}
         </td>
-        <td style={{ padding: '14px 16px', borderBottom: isLast && !expanded ? 'none' : `1px solid ${C.border}`, fontSize: 12, color: C.muted }}>
+        {/* Abriu */}
+        <td style={{ padding: '12px 16px', borderBottom: isLast && !expanded ? 'none' : `1px solid ${C.border}`, fontSize: 12, color: viewed ? C.green : C.muted, fontWeight: viewed ? 600 : 400 }}>
           {viewed ? fmtDate(lead.visualizado_at) : '—'}
         </td>
-        <td style={{ padding: '14px 16px', borderBottom: isLast && !expanded ? 'none' : `1px solid ${C.border}`, textAlign: 'right' }}>
+        {/* Ações */}
+        <td style={{ padding: '12px 16px', borderBottom: isLast && !expanded ? 'none' : `1px solid ${C.border}`, textAlign: 'right' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
             <button
-              onClick={handleDelete}
-              disabled={deleting}
-              style={{
-                background: confirm ? '#FEE2E2' : 'transparent',
-                border: `1px solid ${confirm ? '#FCA5A5' : C.border}`,
-                color: confirm ? '#DC2626' : C.muted,
-                padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 700,
-                cursor: 'pointer', fontFamily: "'Lato', sans-serif", transition: 'all 0.15s',
-                whiteSpace: 'nowrap',
-              }}
+              onClick={handleDelete} disabled={deleting}
+              style={{ background: confirm ? '#FEE2E2' : 'transparent', border: `1px solid ${confirm ? '#FCA5A5' : C.border}`, color: confirm ? '#DC2626' : C.muted, padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: "'Lato', sans-serif", transition: 'all 0.15s', whiteSpace: 'nowrap' }}
             >
               {deleting ? '...' : confirm ? 'Confirmar' : '🗑'}
             </button>
             {confirm && (
-              <button
-                onClick={e => { e.stopPropagation(); setConfirm(false) }}
-                style={{ background: 'transparent', border: 'none', color: C.muted, fontSize: 11, cursor: 'pointer', fontFamily: "'Lato', sans-serif" }}
-              >
+              <button onClick={e => { e.stopPropagation(); setConfirm(false) }} style={{ background: 'transparent', border: 'none', color: C.muted, fontSize: 11, cursor: 'pointer', fontFamily: "'Lato', sans-serif" }}>
                 Cancelar
               </button>
             )}
@@ -204,13 +197,11 @@ function LeadRow({ lead, onCopyLink, onDelete, isLast }) {
                 </div>
               )}
 
-              <div style={{ flex: 1, minWidth: 160, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ flex: 1, minWidth: 160, display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {lead.wa_de && (
                   <div>
-                    <p style={{ fontSize: 10, fontWeight: 700, color: C.muted, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 3 }}>WhatsApp de quem deu</p>
-                    <a href={waLink(lead.wa_de)} target="_blank" rel="noreferrer" style={{ fontSize: 13, color: C.rose, fontWeight: 600, textDecoration: 'none' }}>
-                      {lead.wa_de}
-                    </a>
+                    <p style={{ fontSize: 10, fontWeight: 700, color: C.muted, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>WhatsApp de quem deu</p>
+                    <WAButton phone={lead.wa_de} label={lead.wa_de} />
                   </div>
                 )}
                 <div>
@@ -241,12 +232,272 @@ function LeadRow({ lead, onCopyLink, onDelete, isLast }) {
   )
 }
 
+/* ── Aba Leads ── */
+function TabLeads({ leads, onCopyLink, onDelete }) {
+  const [search, setSearch] = useState('')
+  const [filter, setFilter] = useState('todos')
+
+  const filtered = useMemo(() => {
+    let list = leads
+    if (filter === 'abriu')      list = list.filter(l => l.visualizado_at)
+    if (filter === 'aguardando') list = list.filter(l => !l.visualizado_at)
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      list = list.filter(l =>
+        l.mae?.toLowerCase().includes(q)  ||
+        l.de?.toLowerCase().includes(q)   ||
+        l.wa_mae?.includes(q)             ||
+        l.wa_de?.includes(q)              ||
+        l.msg?.toLowerCase().includes(q)
+      )
+    }
+    return list
+  }, [leads, filter, search])
+
+  return (
+    <>
+      {/* toolbar */}
+      <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: '12px 16px', marginBottom: 16, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+        <input
+          value={search} onChange={e => setSearch(e.target.value)}
+          placeholder="🔍  Buscar por nome, WhatsApp ou mensagem..."
+          style={{ flex: 1, minWidth: 200, background: C.bg, color: C.text, padding: '9px 12px', borderRadius: 8, fontSize: 13, border: `1px solid ${C.border}`, fontFamily: "'Lato', sans-serif", outline: 'none' }}
+        />
+        <div style={{ display: 'flex', gap: 4 }}>
+          {[['todos', 'Todos'], ['abriu', 'Abriram'], ['aguardando', 'Aguardando']].map(([key, label]) => (
+            <button
+              key={key} onClick={() => setFilter(key)}
+              style={{ padding: '8px 14px', borderRadius: 8, border: `1px solid ${filter === key ? C.rose : C.border}`, background: filter === key ? C.roseBg : 'transparent', color: filter === key ? C.rose : C.muted, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: "'Lato', sans-serif", transition: 'all 0.15s' }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden' }}>
+        {filtered.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '48px 0' }}>
+            <p style={{ color: C.muted, fontSize: 14 }}>{search || filter !== 'todos' ? 'Nenhum resultado encontrado.' : 'Nenhum cartão gerado ainda.'}</p>
+          </div>
+        ) : (
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ background: C.bg }}>
+                {['Mamãe', 'WhatsApp', 'Status', 'Enviado', 'Abriu', ''].map((h, i) => (
+                  <th key={i} style={{ padding: '10px 16px', textAlign: i === 5 ? 'right' : 'left', fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: 0.5, textTransform: 'uppercase', borderBottom: `1px solid ${C.border}` }}>
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((lead, i) => (
+                <LeadRow key={lead.id} lead={lead} onCopyLink={onCopyLink} onDelete={onDelete} isLast={i === filtered.length - 1} />
+              ))}
+            </tbody>
+          </table>
+        )}
+        {filtered.length > 0 && (
+          <div style={{ padding: '10px 16px', borderTop: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <p style={{ fontSize: 12, color: C.muted }}>{filtered.length} {filtered.length === 1 ? 'lead' : 'leads'}</p>
+            <p style={{ fontSize: 11, color: C.muted }}>Atualiza a cada 30s</p>
+          </div>
+        )}
+      </div>
+    </>
+  )
+}
+
+/* ── Modal de detalhes do indicador ── */
+function ModalIndicador({ indicador, onClose }) {
+  const taxa = indicador.total ? Math.round((indicador.abriram / indicador.total) * 100) : 0
+
+  useEffect(() => {
+    function onKey(e) { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  return (
+    <div
+      onClick={onClose}
+      style={{ position: 'fixed', inset: 0, background: 'rgba(42,35,32,0.45)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{ background: C.surface, borderRadius: 18, width: '100%', maxWidth: 520, maxHeight: '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.18)' }}
+      >
+        {/* cabeçalho */}
+        <div style={{ padding: '20px 24px 16px', borderBottom: `1px solid ${C.border}` }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: C.rose, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>Indicador</p>
+              <h2 style={{ fontSize: 20, fontWeight: 700, color: C.text, fontFamily: "'Playfair Display', serif", margin: 0 }}>{indicador.nome}</h2>
+              {indicador.wa && (
+                <div style={{ marginTop: 8 }}>
+                  <WAButton phone={indicador.wa} label={indicador.wa} />
+                </div>
+              )}
+            </div>
+            <button onClick={onClose} style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, width: 32, height: 32, cursor: 'pointer', fontSize: 16, color: C.muted, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>×</button>
+          </div>
+
+          {/* métricas resumidas */}
+          <div style={{ display: 'flex', gap: 10, marginTop: 16, flexWrap: 'wrap' }}>
+            <div style={{ background: C.roseBg, border: `1px solid #f5c6bb`, borderRadius: 10, padding: '10px 14px', flex: 1, minWidth: 80, textAlign: 'center' }}>
+              <p style={{ fontSize: 22, fontWeight: 800, color: C.rose, lineHeight: 1 }}>{indicador.total}</p>
+              <p style={{ fontSize: 11, color: C.muted, marginTop: 3 }}>{indicador.total === 1 ? 'cartão' : 'cartões'}</p>
+            </div>
+            <div style={{ background: C.greenBg, border: `1px solid #86efac`, borderRadius: 10, padding: '10px 14px', flex: 1, minWidth: 80, textAlign: 'center' }}>
+              <p style={{ fontSize: 22, fontWeight: 800, color: C.green, lineHeight: 1 }}>{indicador.abriram}</p>
+              <p style={{ fontSize: 11, color: C.muted, marginTop: 3 }}>abriram</p>
+            </div>
+            <div style={{ background: C.amberBg, border: `1px solid #fcd34d`, borderRadius: 10, padding: '10px 14px', flex: 1, minWidth: 80, textAlign: 'center' }}>
+              <p style={{ fontSize: 22, fontWeight: 800, color: C.amber, lineHeight: 1 }}>{taxa}%</p>
+              <p style={{ fontSize: 11, color: C.muted, marginTop: 3 }}>de abertura</p>
+            </div>
+          </div>
+        </div>
+
+        {/* lista de indicados */}
+        <div style={{ overflowY: 'auto', flex: 1 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: 1, textTransform: 'uppercase', padding: '14px 24px 8px' }}>Mamães presenteadas</p>
+          {indicador.indicados.map((ind, i) => {
+            const abriu = !!ind.visualizado_at
+            const isLast = i === indicador.indicados.length - 1
+            return (
+              <div key={ind.id} style={{ padding: '11px 24px', borderBottom: isLast ? 'none' : `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <div style={{ width: 7, height: 7, borderRadius: '50%', background: abriu ? C.green : C.amber, flexShrink: 0 }} />
+                <span style={{ fontSize: 14, fontWeight: 700, color: C.text, flex: '0 0 auto', minWidth: 100 }}>{ind.mae}</span>
+                <div style={{ flex: 1 }} onClick={e => e.stopPropagation()}>
+                  {ind.wa_mae ? <WAButton phone={ind.wa_mae} label={ind.wa_mae} /> : <span style={{ fontSize: 12, color: C.muted }}>—</span>}
+                </div>
+                <span style={{ fontSize: 11, color: C.muted, whiteSpace: 'nowrap' }}>📤 {fmt(ind.enviado_at)}</span>
+                {abriu
+                  ? <span style={{ fontSize: 11, color: C.green, fontWeight: 600, whiteSpace: 'nowrap' }}>✅ {fmt(ind.visualizado_at)}</span>
+                  : <span style={{ fontSize: 11, color: C.amber, whiteSpace: 'nowrap' }}>⏳ Aguardando</span>
+                }
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ── Aba Indicadores ── */
+function TabIndicadores({ leads }) {
+  const [search, setSearch]       = useState('')
+  const [selected, setSelected]   = useState(null)
+
+  const ranking = useMemo(() => {
+    const map = {}
+    leads.forEach(l => {
+      const key = l.wa_de || l.de || '__desconhecido__'
+      if (!map[key]) map[key] = { nome: l.de || '(sem nome)', wa: l.wa_de || null, total: 0, abriram: 0, indicados: [] }
+      map[key].total++
+      if (l.visualizado_at) map[key].abriram++
+      map[key].indicados.push(l)
+    })
+    return Object.values(map)
+      .sort((a, b) => b.total - a.total)
+      .filter(r => r.nome !== '(sem nome)' || r.wa)
+  }, [leads])
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return ranking
+    const q = search.toLowerCase()
+    return ranking.filter(r => r.nome.toLowerCase().includes(q) || r.wa?.includes(q))
+  }, [ranking, search])
+
+  if (leads.every(l => !l.de && !l.wa_de)) {
+    return (
+      <div style={{ textAlign: 'center', padding: '60px 0' }}>
+        <p style={{ fontSize: 32, marginBottom: 12 }}>📊</p>
+        <p style={{ color: C.muted, fontSize: 14 }}>Nenhum indicador registrado ainda.</p>
+        <p style={{ color: C.muted, fontSize: 12, marginTop: 4 }}>Os indicadores aparecem quando alguém preenche o campo "De quem é o presente".</p>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      {selected && <ModalIndicador indicador={selected} onClose={() => setSelected(null)} />}
+
+      <div style={{ marginBottom: 16 }}>
+        <input
+          value={search} onChange={e => setSearch(e.target.value)}
+          placeholder="🔍  Buscar indicador..."
+          style={{ width: '100%', background: C.surface, color: C.text, padding: '10px 14px', borderRadius: 10, fontSize: 13, border: `1px solid ${C.border}`, fontFamily: "'Lato', sans-serif", outline: 'none', boxSizing: 'border-box' }}
+        />
+      </div>
+
+      {/* cabeçalho da tabela */}
+      <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '40px 1fr auto auto auto', gap: 0, background: C.bg, padding: '10px 16px', borderBottom: `1px solid ${C.border}` }}>
+          {['#', 'Nome', 'Telefone', 'Cartões', ''].map((h, i) => (
+            <p key={i} style={{ fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: 0.5, textTransform: 'uppercase', textAlign: i >= 3 ? 'center' : 'left' }}>{h}</p>
+          ))}
+        </div>
+
+        {filtered.map((r, idx) => {
+          const taxa = r.total ? Math.round((r.abriram / r.total) * 100) : 0
+          const isLast = idx === filtered.length - 1
+          const medalBg = idx === 0 ? C.gold : idx === 1 ? '#A8A8A8' : idx === 2 ? '#CD7F32' : C.border
+          const medalColor = idx < 3 ? '#fff' : C.muted
+
+          return (
+            <div
+              key={idx}
+              onClick={() => setSelected(r)}
+              style={{ display: 'grid', gridTemplateColumns: '40px 1fr auto auto auto', gap: 0, alignItems: 'center', padding: '13px 16px', borderBottom: isLast ? 'none' : `1px solid ${C.border}`, cursor: 'pointer', transition: 'background 0.12s' }}
+              onMouseEnter={e => e.currentTarget.style.background = C.bg}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              {/* posição */}
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: medalBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: medalColor }}>
+                {idx + 1}
+              </div>
+
+              {/* nome */}
+              <div style={{ paddingRight: 12 }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: C.text }}>{r.nome}</p>
+              </div>
+
+              {/* telefone */}
+              <div style={{ paddingRight: 16 }} onClick={e => e.stopPropagation()}>
+                {r.wa ? <WAButton phone={r.wa} label={r.wa} /> : <span style={{ fontSize: 12, color: C.muted }}>—</span>}
+              </div>
+
+              {/* cartões + taxa */}
+              <div style={{ textAlign: 'center', paddingRight: 16 }}>
+                <p style={{ fontSize: 15, fontWeight: 800, color: C.rose }}>{r.total}</p>
+                <p style={{ fontSize: 10, color: C.muted }}>{taxa}% abriram</p>
+              </div>
+
+              {/* seta */}
+              <div style={{ textAlign: 'center' }}>
+                <span style={{ fontSize: 13, color: C.muted }}>›</span>
+              </div>
+            </div>
+          )
+        })}
+
+        <div style={{ padding: '10px 16px', borderTop: `1px solid ${C.border}` }}>
+          <p style={{ fontSize: 12, color: C.muted }}>{filtered.length} {filtered.length === 1 ? 'indicador' : 'indicadores'}</p>
+        </div>
+      </div>
+    </>
+  )
+}
+
 /* ── Dashboard ── */
 function Dashboard({ onLogout }) {
   const [leads, setLeads]     = useState([])
   const [loading, setLoading] = useState(true)
-  const [search, setSearch]   = useState('')
-  const [filter, setFilter]   = useState('todos')
+  const [tab, setTab]         = useState('leads')
   const [toast, setToast]     = useState('')
 
   useEffect(() => {
@@ -258,9 +509,8 @@ function Dashboard({ onLogout }) {
 
   async function fetchLeads() {
     const { data, error } = await supabase.from('leads').select('*').order('enviado_at', { ascending: false })
-    console.log('[fetchLeads]', { count: data?.length, error: error?.message })
     if (error) { setLoading(false); return }
-    if (data && data.length > 0) setLeads(data)
+    if (data) setLeads(data)
     setLoading(false)
   }
 
@@ -277,26 +527,19 @@ function Dashboard({ onLogout }) {
     setTimeout(() => setToast(''), 2200)
   }
 
-  const filtered = useMemo(() => {
-    let list = leads
-    if (filter === 'abriu')      list = list.filter(l => l.visualizado_at)
-    if (filter === 'aguardando') list = list.filter(l => !l.visualizado_at)
-    if (search.trim()) {
-      const q = search.toLowerCase()
-      list = list.filter(l =>
-        l.mae?.toLowerCase().includes(q)  ||
-        l.de?.toLowerCase().includes(q)   ||
-        l.wa_mae?.includes(q)             ||
-        l.msg?.toLowerCase().includes(q)
-      )
-    }
-    return list
-  }, [leads, filter, search])
+  const total  = leads.length
+  const abriu  = leads.filter(l => l.visualizado_at).length
+  const aguard = total - abriu
+  const taxa   = total ? Math.round((abriu / total) * 100) : 0
+  const indicadores = useMemo(() => {
+    const s = new Set(leads.filter(l => l.wa_de || l.de).map(l => l.wa_de || l.de))
+    return s.size
+  }, [leads])
 
-  const total   = leads.length
-  const abriu   = leads.filter(l => l.visualizado_at).length
-  const aguard  = total - abriu
-  const taxa    = total ? Math.round((abriu / total) * 100) : 0
+  const TABS = [
+    { id: 'leads',        label: '📋 Leads',        count: total },
+    { id: 'indicadores',  label: '🏆 Indicadores',   count: indicadores },
+  ]
 
   return (
     <div style={{ width: '100%', minHeight: '100%', background: C.bg, fontFamily: "'Lato', sans-serif", overflowY: 'auto' }}>
@@ -312,92 +555,47 @@ function Dashboard({ onLogout }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {toast && <span style={{ fontSize: 12, color: C.green, fontWeight: 600 }}>✓ {toast}</span>}
-          <button onClick={fetchLeads} style={{ background: 'transparent', border: `1px solid ${C.border}`, color: C.muted, padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontFamily: "'Lato', sans-serif" }}>
-            ↻
-          </button>
-          <button onClick={onLogout} style={{ background: 'transparent', border: 'none', color: C.muted, cursor: 'pointer', fontSize: 12, fontFamily: "'Lato', sans-serif" }}>
-            Sair
-          </button>
+          <button onClick={fetchLeads} style={{ background: 'transparent', border: `1px solid ${C.border}`, color: C.muted, padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontFamily: "'Lato', sans-serif" }}>↻</button>
+          <button onClick={onLogout} style={{ background: 'transparent', border: 'none', color: C.muted, cursor: 'pointer', fontSize: 12, fontFamily: "'Lato', sans-serif" }}>Sair</button>
         </div>
       </div>
 
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '24px 20px' }}>
+      <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 20px' }}>
 
         {/* stats */}
         <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
-          <StatCard label="Total" value={total} icon="🎁" />
-          <StatCard label="Abriram" value={`${abriu} · ${taxa}%`} icon="✅" accent={C.green} />
+          <StatCard label="Total de cartões" value={total} icon="🎁" />
+          <StatCard label="Abriram" value={abriu} sub={`${taxa}% de abertura`} icon="✅" accent={C.green} />
           <StatCard label="Aguardando" value={aguard} icon="⏳" accent={C.amber} />
+          <StatCard label="Indicadores únicos" value={indicadores} icon="🏆" accent={C.roseDark} />
         </div>
 
-        {/* toolbar */}
-        <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: '12px 16px', marginBottom: 16, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="🔍  Buscar por nome, WhatsApp ou mensagem..."
-            style={{
-              flex: 1, minWidth: 200, background: C.bg, color: C.text,
-              padding: '9px 12px', borderRadius: 8, fontSize: 13,
-              border: `1px solid ${C.border}`, fontFamily: "'Lato', sans-serif", outline: 'none',
-            }}
-          />
-          <div style={{ display: 'flex', gap: 4 }}>
-            {[['todos', 'Todos'], ['abriu', 'Abriram'], ['aguardando', 'Aguardando']].map(([key, label]) => (
-              <button
-                key={key}
-                onClick={() => setFilter(key)}
-                style={{
-                  padding: '8px 14px', borderRadius: 8, border: `1px solid ${filter === key ? C.rose : C.border}`,
-                  background: filter === key ? '#FFF0EE' : 'transparent',
-                  color: filter === key ? C.rose : C.muted,
-                  fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                  fontFamily: "'Lato', sans-serif", transition: 'all 0.15s',
-                }}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+        {/* tabs */}
+        <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, padding: 4, width: 'fit-content' }}>
+          {TABS.map(t => (
+            <button
+              key={t.id} onClick={() => setTab(t.id)}
+              style={{ padding: '8px 16px', borderRadius: 9, border: 'none', background: tab === t.id ? C.rose : 'transparent', color: tab === t.id ? '#fff' : C.muted, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'Lato', sans-serif", transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: 6 }}
+            >
+              {t.label}
+              {t.count != null && (
+                <span style={{ background: tab === t.id ? 'rgba(255,255,255,0.25)' : C.border, color: tab === t.id ? '#fff' : C.muted, fontSize: 11, fontWeight: 700, padding: '1px 7px', borderRadius: 20 }}>
+                  {t.count}
+                </span>
+              )}
+            </button>
+          ))}
         </div>
 
-        {/* tabela */}
-        <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden' }}>
-          {loading ? (
-            <p style={{ textAlign: 'center', color: C.muted, padding: '40px 0', fontSize: 14 }}>Carregando...</p>
-          ) : filtered.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '48px 0' }}>
-
-              <p style={{ color: C.muted, fontSize: 14 }}>
-                {search || filter !== 'todos' ? 'Nenhum resultado encontrado.' : 'Nenhum cartão gerado ainda.'}
-              </p>
-            </div>
-          ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: C.bg }}>
-                  {['Mamãe', 'WhatsApp', 'Status', 'Enviado', 'Abriu', ''].map((h, i) => (
-                    <th key={i} style={{ padding: '10px 16px', textAlign: i === 5 ? 'right' : 'left', fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: 0.5, textTransform: 'uppercase', borderBottom: `1px solid ${C.border}` }}>
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((lead, i) => (
-                  <LeadRow key={lead.id} lead={lead} onCopyLink={copyLink} onDelete={deleteLead} isLast={i === filtered.length - 1} />
-                ))}
-              </tbody>
-            </table>
-          )}
-
-          {filtered.length > 0 && (
-            <div style={{ padding: '10px 16px', borderTop: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <p style={{ fontSize: 12, color: C.muted }}>{filtered.length} {filtered.length === 1 ? 'lead' : 'leads'}</p>
-              <p style={{ fontSize: 11, color: C.muted }}>Atualiza a cada 30s</p>
-            </div>
-          )}
-        </div>
+        {/* conteúdo */}
+        {loading ? (
+          <p style={{ textAlign: 'center', color: C.muted, padding: '40px 0', fontSize: 14 }}>Carregando...</p>
+        ) : (
+          <>
+            {tab === 'leads'       && <TabLeads leads={leads} onCopyLink={copyLink} onDelete={deleteLead} />}
+            {tab === 'indicadores' && <TabIndicadores leads={leads} />}
+          </>
+        )}
       </div>
     </div>
   )
@@ -413,15 +611,8 @@ export default function Admin() {
     return () => els.forEach(el => { if (el) el.style.overflow = '' })
   }, [])
 
-  function handleLogin() {
-    sessionStorage.setItem('admin_auth', '1')
-    setAuth(true)
-  }
-
-  function handleLogout() {
-    sessionStorage.removeItem('admin_auth')
-    setAuth(false)
-  }
+  function handleLogin() { sessionStorage.setItem('admin_auth', '1'); setAuth(true) }
+  function handleLogout() { sessionStorage.removeItem('admin_auth'); setAuth(false) }
 
   if (!auth) return <LoginScreen onLogin={handleLogin} />
   return <Dashboard onLogout={handleLogout} />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { ROSE, ROSE_DARK, CREAM, BLUSH, CHARCOAL, GOLD, PETALS } from '../constants'
 import { supabase } from '../lib/supabase'
 
@@ -198,51 +198,111 @@ function ScreenWelcome({ onStart }) {
 
 /* ─── ETAPA 1: dados ─── */
 function Step1({ data, onChange, onNext, onBack }) {
-  const valid = data.mae.trim() && data.de.trim() && data.waMae.trim() && data.waDe.trim()
+  const [checking, setChecking] = useState(false)
+  const [duplicate, setDuplicate] = useState(null)
+
+  const valid = data.mae.trim() && data.de.trim() && data.waMae.trim() && data.waDe.trim() && !duplicate
+
+  async function checkDuplicate() {
+    const digits = data.waMae.replace(/\D/g, '')
+    if (digits.length < 10) return
+    setChecking(true)
+    const { data: rows } = await supabase.from('leads').select('mae, wa_mae')
+    setChecking(false)
+    const match = (rows || []).find(r => r.wa_mae && r.wa_mae.replace(/\D/g, '') === digits)
+    if (match) setDuplicate(match)
+    else setDuplicate(null)
+  }
+
+  function handleNext() {
+    if (duplicate) return
+    onNext()
+  }
+
   return (
-    <div style={{ width: '100%', height: '100%', background: L.bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', overflowY: 'auto' }}>
-      <div className="screen-slide-right" style={{ width: '100%', maxWidth: 420, zIndex: 1 }}>
-        <StepDots current={0} total={4} />
-
-        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, color: L.text, marginBottom: 4 }}>
-          Sobre o presente 🎁
-        </p>
-        <p style={{ fontSize: 13, color: L.muted, marginBottom: 24 }}>
-          Preencha os dados de quem vai dar e receber
-        </p>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div>
-            <FieldLabel>Nome da mamãe *</FieldLabel>
-            <Input value={data.mae} onChange={e => onChange('mae', e.target.value)} placeholder="Ex: Maria, Vovó, Mãe..." maxLength={40} />
-          </div>
-
-          <div>
-            <FieldLabel>WhatsApp da mamãe *</FieldLabel>
-            <Input value={data.waMae} onChange={e => onChange('waMae', maskPhone(e.target.value))} placeholder="(11) 99999-9999" maxLength={16} type="tel" />
-          </div>
-
-          <div style={{ height: 1, background: L.border, margin: '4px 0' }} />
-
-          <div>
-            <FieldLabel>Quem presenteia *</FieldLabel>
-            <Input value={data.de} onChange={e => onChange('de', e.target.value)} placeholder="Ex: João, seus filhos..." maxLength={40} />
-          </div>
-
-          <div>
-            <FieldLabel>WhatsApp de quem presenteia *</FieldLabel>
-            <Input value={data.waDe} onChange={e => onChange('waDe', maskPhone(e.target.value))} placeholder="(11) 99999-9999" maxLength={16} type="tel" />
+    <>
+      {/* ── Popup de duplicado ── */}
+      {duplicate && (
+        <div
+          onClick={() => setDuplicate(null)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(42,35,32,0.5)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background: '#fff', borderRadius: 20, padding: '28px 28px 24px', width: '100%', maxWidth: 360, boxShadow: '0 20px 60px rgba(0,0,0,0.2)', textAlign: 'center' }}
+          >
+            <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, margin: '0 auto 16px' }}>
+              ⚠️
+            </div>
+            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, color: '#2A2320', marginBottom: 8 }}>
+              Número já cadastrado
+            </h3>
+            <p style={{ fontSize: 13, color: '#8A7672', lineHeight: 1.6, marginBottom: 20 }}>
+              Este número já está cadastrado e não pode receber outro cartão. Verifique o número e tente novamente.
+            </p>
+            <button
+              onClick={() => setDuplicate(null)}
+              style={{ width: '100%', background: 'linear-gradient(135deg, #C4887A, #9E6055)', color: '#fff', border: 'none', borderRadius: 12, padding: '13px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: "'Lato', sans-serif" }}
+            >
+              Entendido, vou corrigir
+            </button>
           </div>
         </div>
+      )}
 
-        <div style={{ marginTop: 24 }}>
-          <PrimaryBtn onClick={onNext} disabled={!valid}>
-            Próximo — Mensagem especial →
-          </PrimaryBtn>
-          <BackBtn onClick={onBack} />
+      <div style={{ width: '100%', height: '100%', background: L.bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', overflowY: 'auto' }}>
+        <div className="screen-slide-right" style={{ width: '100%', maxWidth: 420, zIndex: 1 }}>
+          <StepDots current={0} total={4} />
+
+          <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, color: L.text, marginBottom: 4 }}>
+            Sobre o presente 🎁
+          </p>
+          <p style={{ fontSize: 13, color: L.muted, marginBottom: 24 }}>
+            Preencha os dados de quem vai dar e receber
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div>
+              <FieldLabel>Nome da mamãe *</FieldLabel>
+              <Input value={data.mae} onChange={e => onChange('mae', e.target.value)} placeholder="Ex: Maria, Vovó, Mãe..." maxLength={40} />
+            </div>
+
+            <div>
+              <FieldLabel>WhatsApp da mamãe *</FieldLabel>
+              <input
+                type="tel"
+                value={data.waMae}
+                onChange={e => { onChange('waMae', maskPhone(e.target.value)); setDuplicate(null) }}
+                onBlur={checkDuplicate}
+                placeholder="(11) 99999-9999"
+                maxLength={16}
+                style={{ width: '100%', background: duplicate ? '#FFF0EE' : L.surface, color: L.text, padding: '14px 16px', borderRadius: 12, fontSize: 15, border: `1.5px solid ${duplicate ? '#C4887A' : L.border}`, fontFamily: "'Lato', sans-serif", outline: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', boxSizing: 'border-box' }}
+              />
+              {checking && <p style={{ fontSize: 11, color: L.muted, marginTop: 5 }}>Verificando número...</p>}
+            </div>
+
+            <div style={{ height: 1, background: L.border, margin: '4px 0' }} />
+
+            <div>
+              <FieldLabel>Quem presenteia *</FieldLabel>
+              <Input value={data.de} onChange={e => onChange('de', e.target.value)} placeholder="Ex: João, seus filhos..." maxLength={40} />
+            </div>
+
+            <div>
+              <FieldLabel>WhatsApp de quem presenteia *</FieldLabel>
+              <Input value={data.waDe} onChange={e => onChange('waDe', maskPhone(e.target.value))} placeholder="(11) 99999-9999" maxLength={16} type="tel" />
+            </div>
+          </div>
+
+          <div style={{ marginTop: 24 }}>
+            <PrimaryBtn onClick={handleNext} disabled={!valid}>
+              Próximo — Mensagem especial →
+            </PrimaryBtn>
+            <BackBtn onClick={onBack} />
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
 
@@ -495,7 +555,10 @@ function Step4({ data, onBack }) {
   const [saving, setSaving]   = useState(false)
   const [saveErr, setSaveErr] = useState(false)
 
+  const savedRef = useRef(false)
   useEffect(() => {
+    if (savedRef.current) return
+    savedRef.current = true
     async function saveLeadAndBuildLink() {
       setSaving(true)
       const base = window.location.origin + window.location.pathname
