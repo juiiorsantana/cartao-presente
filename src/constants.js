@@ -7,6 +7,7 @@ export const GOLD      = '#C9A96E'
 
 export const PHOTO = '/uploads/foto-1777318536248.jpg'
 
+export const APP_URL         = 'https://presente.dravaleriacabral.com.br'
 export const WHATSAPP_NUMBER = '5565999629042'
 export const WHATSAPP_MSG = 'Olá, Dra. Valeria! Recebi um presente especial de avaliação + limpeza na campanha Dia das Mães. Gostaria de agendar minha consulta. 🌸'
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { ROSE, ROSE_DARK, CREAM, BLUSH, CHARCOAL, GOLD, PETALS } from '../constants'
+import { ROSE, ROSE_DARK, CREAM, BLUSH, CHARCOAL, GOLD, PETALS, APP_URL } from '../constants'
 import { supabase } from '../lib/supabase'
 
 function maskPhone(raw) {
@@ -561,7 +561,7 @@ function Step4({ data, onBack }) {
     savedRef.current = true
     async function saveLeadAndBuildLink() {
       setSaving(true)
-      const base = window.location.origin + window.location.pathname
+      const base = APP_URL
       const { data: row, error } = await supabase.from('leads').insert({
         mae:      data.mae,
         wa_mae:   data.waMae,
